@@ -25,7 +25,7 @@ class Rover {
          this.completed = true;
     } else if(messageObj.results[i]['value'] === 'NORMAL'){
         this.mode = 'LOW_POWER';
-        messageObj.completed = true;
+        this.completed = true;
         }
       }
     } 

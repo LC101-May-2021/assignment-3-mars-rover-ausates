@@ -27,11 +27,12 @@ describe("Rover class", function(){
 
   it('responds correctly to status check command', function(){
     expect(rover.roverStatus).toEqual([rover.mode, rover.generatorWatts, rover.position]);
-  })
+  });
 
   it('responds correctly to mode change command', function(){
    /*This works because default mode is normal, and the command above is 'MODE_CHANGE'*/ 
+  console.log(response.results[0]['commandType'])
+
    expect(response.completed).toEqual(true);
   })
-  
 });
