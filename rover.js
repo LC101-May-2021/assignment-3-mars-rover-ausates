@@ -8,29 +8,52 @@ class Rover {
      if (!this.position){
        throw Error("Position required.");
      }
-   }
+     }
+
+     modeChange(){
+       if (this.mode === 'NORMAL'){
+         this.mode = 'LOW_POWER';
+       } else if (this.mode === 'LOW_POWER'){
+         this.mode = 'NORMAL'
+       }
+     }
+
+     move(num){
+       this.position = this.position + num;
+       return this.position;
+     }
+   
   //  roverStatus = [this.position, this.mode, this.generatorWatts];
    receiveMessage(message){
     let messageObj = {
       name: message.name,
-      results: message.commands,
+      results: [],
       };
-      for (let i=0; i < messageObj.results.length; i++){
-      if (messageObj.results[i]['commandType'] === 'STATUS_CHECK'){
-        this.roverStatus = [this.mode, this.generatorWatts, this.position];
-      } 
-      if (messageObj.results[i]['commandType'] === 'MODE_Change'){
-       if(messageObj.results[i]['value'] === 'LOW_POWER'){
-         this.mode = 'NORMAL';
-         this.completed = true;
-    } else if(messageObj.results[i]['value'] === 'NORMAL'){
-        this.mode = 'LOW_POWER';
-        this.completed = true;
-        }
+
+      for (let i = 0; i< message.commands.length; i++){
+        messageObj.results.push(message.commands[i]);
       }
-    } 
-    
+      for (let i=0; i < message.commands.length; i++){
+      if (message.commands[i]['commandType'] === 'STATUS_CHECK'){
+        messageObj.results.splice(i, 1, `{completed: true, roverStatus: {mode: ${this.mode}, generatorWatts: ${this.generatorWatts}, position: ${this.position}}}`)
+      } else if (message.commands[i]['commandType'] === 'MODE_CHANGE'){
+        messageObj.results.splice(i, 1, `{completed: true}`)
+        this.modeChange();
+      } else if (message.commands[i]['commandType'] === 'MOVE'){
+        if (this.mode === 'LOW_POWER'){
+          messageObj.results.splice(i, 1, `{completed: false}`)
+        } else {
+          let num = message.commands[i]['value'];
+          messageObj.results.splice(i, 1, `{completed: true}`);
+          this.position = this.move(num);
+        } 
+      } else {
+          messageObj.results.splice(i, 1, '{completed: false}')
+        }
+      } 
     return messageObj;
    }
 }
 module.exports = Rover;
+
+/* messageObj.results.splice(i, 1, `{completed: true, roverStatus: {mode: ${this.mode}, generatorWatts: ${this.generatorWatts}, position: ${this.position}}}`) */
